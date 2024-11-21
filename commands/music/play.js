@@ -48,9 +48,8 @@ module.exports = {
                 // fmt: 'mp3',
                 // highWaterMark: 1 << 30,
                 // liveBuffer: 20000,
-                // dlChunkSize: 4096,
-                bitrate: 64,
-                quality: 'lowestaudio'
+                dlChunkSize: 0,
+                quality: 'lowestaudio',
             });
             const info = await new Promise((resolve, reject) => {
                 audioStream.on('info', (info) => {
