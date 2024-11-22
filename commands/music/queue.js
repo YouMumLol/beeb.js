@@ -18,12 +18,12 @@ module.exports = {
         const queueEmbed = new EmbedBuilder()
             .setTitle('Queue')
             .setDescription('Here are the songs in the queue:')
-            .setColor('RANDOM')
+            .setColor('#FF0000')
             .addFields(
-                serverQueue.queue.map((song, index) => {
+                serverQueue.queue.map(({videoDetails}, index) => {
                     return {
-                        name: `${index + 1}. ${song.title}`,
-                        value: `Duration: ${song.duration}`,
+                        name: `${index>0?index +'.':'Now playing:'} ${videoDetails.title}`,
+                        value: `Duration: ${videoDetails.duration}`,
                     }
                 })
             );

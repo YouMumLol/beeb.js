@@ -1,11 +1,11 @@
-const youtubesearchapi = require("youtube-search-api");
+const yts = require("yt-search");
 
-searchTerm = 'https://www.youtube.com/watch?v=rn_YodiJO6k&pp=ygUfb3RoZXJzaWRlIHJlZCBob3QgY2hpbGkgcGVwcGVycw%3D%3D';
+searchTerm = 'skibidi';
 
-youtubesearchapi.GetListByKeyword(searchTerm,false,1).then((data) => {
-    console.log(data);
-}).catch((err) => {
-    console.log(err);
-});
-
-
+const video =  yts(searchTerm)
+.then((res) => {
+    res.videos.forEach(element => {
+        console.log(element.title);
+        console.log(element.url);
+    });
+})
