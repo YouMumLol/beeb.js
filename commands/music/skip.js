@@ -16,7 +16,8 @@ module.exports = {
         }
 
         // Skip the song by stopping the player and playing the next one
+        console.log('Skipping the current song');
         serverQueue.player.stop();
-        await interaction.reply({ content: '⏭️ Skipped the current song!', ephemeral: false });
+        await interaction.reply({ content: '⏭️ | Skipped the current song!', ephemeral: false });
     }
 };

@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder  } = require('discord.js');
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, StreamType, AudioPlayerStatus} = require('@discordjs/voice');
 const ytdl = require("@distube/ytdl-core");
 const queue = require('../../queue')
@@ -24,6 +24,8 @@ module.exports = {
                 await interaction.reply({content:'You need to be in a voice channel to use this command!', ephemeral: true});
                 return;
             }
+
+            await interaction.deferReply();
             
             const serverQueue = queue.get(guildId);
 
@@ -96,7 +98,14 @@ function play(guildId, player, resource, videoDetails) {
         return;
     }
 
-    serverQueue.channel.send(`Now playing: ${videoDetails.title}`);
+    const exampleEmbed = new EmbedBuilder()
+	.setColor('#ff0000')
+	.setTitle('Now Playing ***' + videoDetails.title + '***')
+	.setURL(videoDetails.video_url)
+	.setImage('https://i.imgur.com/AfFp7pu.png')
+
+    serverQueue.channel.send({ embeds: [exampleEmbed] });
+
     player.play(resource);
 
     serverQueue.connection.subscribe(player);
