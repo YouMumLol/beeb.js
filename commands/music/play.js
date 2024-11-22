@@ -150,7 +150,8 @@ function addPlayerListeners(player, guildId) {
         } else {
             console.log('Queue is empty, destroying connection');
             serverQueue.connection.destroy();
-            queue.delete(serverQueue.guildId);
+            queue.delete(guildId);
+            console.log(queue);
         }
     });
 }
