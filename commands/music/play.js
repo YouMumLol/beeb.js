@@ -45,13 +45,20 @@ module.exports = {
                 url = await search(input);
             }
             console.log(url);
-            const audioStream = ytdl(url, {
+            const audioStream = await ytdl(url, {
                 filter: 'audioonly',
                 // fmt: 'mp3',
                 // highWaterMark: 1 << 30,
                 // liveBuffer: 20000,
                 dlChunkSize: 0,
                 quality: 'lowestaudio',
+            });
+            audioStream.on('error', (error) => {
+                console.error('Stream error:', error);
+            });
+            
+            audioStream.on('end', () => {
+                console.log('Stream ended');
             });
             const info = await new Promise((resolve, reject) => {
                 audioStream.on('info', (info) => {
@@ -82,12 +89,12 @@ module.exports = {
             } else{
                 serverQueue.queue.push({resource:resource, videoDetails: details});
             }
-            await interaction.reply({ content: `🎶 | Added **${details.title}** to the queue.`, ephemeral: false });
+            await interaction.editReply({ content: `🎶 | Added **${details.title}** to the queue.`, ephemeral: false });
 	},
 };
 
 // Function to start or continue playing the next song in the queue
-function play(guildId, player, resource, videoDetails) {
+async function play(guildId, player, resource, videoDetails) {
     console.log('Play hath been called');
     const serverQueue = queue.get(guildId);
     console.log('serverQueue obtained');
@@ -102,7 +109,7 @@ function play(guildId, player, resource, videoDetails) {
 	.setColor('#ff0000')
 	.setTitle('Now Playing ***' + videoDetails.title + '***')
 	.setURL(videoDetails.video_url)
-	.setImage('https://i.imgur.com/AfFp7pu.png')
+	.setImage(videoDetails.thumbnails[videoDetails.thumbnails.length-1].url)
 
     serverQueue.channel.send({ embeds: [exampleEmbed] });
 
