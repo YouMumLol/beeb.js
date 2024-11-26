@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "beebing",
   "main": "app.js",
+  "type": "commonjs",
   "scripts": {
     "start": "node register-commands && node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
