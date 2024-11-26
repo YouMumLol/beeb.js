@@ -95,6 +95,7 @@ function initializeQueue(guildId, connection, textChannel) {
 
   player.on(AudioPlayerStatus.Idle, () => {
     const serverQueue = queue.get(guildId);
+    console.log(serverQueue)
     serverQueue.queue.shift(); // Remove the finished song
     if (serverQueue.queue.length > 0) {
       playNext(serverQueue);
@@ -116,6 +117,7 @@ async function playNext(serverQueue) {
     quality: "highestaudio",
     highWaterMark: 1, // Adjust buffer size for smoother streaming
     dlChunkSize: 0,
+    bitrate: 96,
   });
 
   console.log("Audio stream created");
