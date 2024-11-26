@@ -17,8 +17,10 @@ module.exports = {
     async autocomplete(interaction) {
         const focusedValue = interaction.options.getFocused();
         if (focusedValue && focusedValue.length > 0) {
+            console.log("starting search: ",focusedValue);
             const searchResults = await yts(focusedValue);
-            const choices = searchResults.videos.map(video => ({ name: video.title, value: video.url }));
+            console.log("finished search: ",focusedValue);
+            const choices = searchResults.videos.slice(0,5).map(video => ({ name: video.title, value: video.url }));
             await interaction.respond(choices);
         } else {
             await interaction.respond([]);
@@ -43,16 +45,18 @@ module.exports = {
 
         const input = interaction.options.getString('query');
         const url = input.includes('https://') ? input : await search(input);
-        const metadata = await ytdl.getBasicInfo(url);
-
-        const serverQueue = queue.get(guildId) || initializeQueue(guildId, connection, interaction.channel);
-
-        serverQueue.queue.push(metadata);
-        if (serverQueue.queue.length === 1) {
+        let serverQueue = queue.get(guildId)
+        if (!serverQueue) {
+            serverQueue = initializeQueue(guildId, connection, interaction.channel);
+            const metadata = await ytdl.getBasicInfo(url);
+            serverQueue.queue.push(metadata);
             playNext(serverQueue);
+            await interaction.editReply(`🎶 | Added **${metadata.videoDetails.title}** to the queue.`);
+        } else {
+            const metadata = await ytdl.getBasicInfo(url);
+            serverQueue.queue.push(metadata);
+            await interaction.editReply(`🎶 | Added **${metadata.videoDetails.title}** to the queue.`);
         }
-
-        await interaction.editReply(`🎶 | Added **${metadata.videoDetails.title}** to the queue.`);
     },
 };
 
@@ -85,24 +89,21 @@ function initializeQueue(guildId, connection, textChannel) {
 
     return queueConstruct;
 }
+
 async function playNext(serverQueue) {
     console.log('Playing the next song');
     const nextSong = serverQueue.queue[0];
-    
+
     // Start fetching the audio stream
     const audioStream = ytdl(nextSong.videoDetails.video_url, {
         filter: 'audioonly',
         quality: 'highestaudio',
-        highWaterMark: 1 << 25, // Adjust buffer size for smoother streaming
+        highWaterMark: 1, // Adjust buffer size for smoother streaming
         dlChunkSize: 0,
     });
 
     console.log('Audio stream created');
 
-    // Wait for the stream to buffer enough data
-    await waitForBuffer(audioStream, 100000); // 100KB or customize based on needs
-
-    // Create an audio resource
     const resource = createAudioResource(audioStream);
     console.log('Audio resource created');
 
@@ -121,7 +122,6 @@ async function playNext(serverQueue) {
     serverQueue.textChannel.send({ embeds: [embed] });
 }
 
-
 function cleanupQueue(guildId) {
     const serverQueue = queue.get(guildId);
     if (serverQueue) {
@@ -133,26 +133,4 @@ function cleanupQueue(guildId) {
 async function search(query) {
     const searchResults = await yts(query);
     return searchResults.videos[0]?.url || null;
-}
-
-async function waitForBuffer(stream, requiredBytes) {
-    return new Promise((resolve, reject) => {
-        let bufferedBytes = 0;
-
-        const onData = chunk => {
-            bufferedBytes += chunk.length;
-            if (bufferedBytes >= requiredBytes) {
-                stream.off('data', onData); // Stop listening once the buffer is sufficient
-                resolve();
-            }
-        };
-
-        const onError = error => {
-            stream.off('data', onData);
-            reject(error);
-        };
-
-        stream.on('data', onData);
-        stream.on('error', onError);
-    });
 }
